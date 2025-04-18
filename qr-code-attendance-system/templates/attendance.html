@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Student Attendance</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='attendance.css') }}"
+    />
+
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css"
+      rel="stylesheet"
+    />
+  </head>
+
+  <body>
+    <!-- Login Form -->
+    <div class="login-container">
+      <form id="login-form">
+        <label for="student-name">Name:</label>
+        <input
+          type="text"
+          id="student-name"
+          placeholder="Enter your name"
+          required
+        />
+        <br />
+        <label for="student-id">Student ID:</label>
+        <input
+          type="text"
+          id="student-id"
+          placeholder="Enter your ID"
+          required
+        />
+        <br />
+        <button type="submit">Check Attendance</button>
+      </form>
+    </div>
+
+    <!-- Subject Dropdown (Hidden by Default) -->
+    <div class="subject-container hidden" id="subject-container">
+      <div class="dropdown-container">
+        <select id="subject-select">
+          <!-- Subject options will be dynamically populated -->
+        </select>
+
+        <button id="filter-attendance">
+          <i class="bi bi-check2-circle"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Attendance Section (Hidden by Default) -->
+    <div class="attendance-container hidden" id="attendance-container">
+      <table class="table" style="margin-top: 100px">
+        <thead>
+          <tr>
+            <th>Subject</th>
+            <th>Date</th>
+            <th>Time Slot</th>
+            <th>Section</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="attendance-table-body"></tbody>
+      </table>
+      <div
+        id="attendance-count"
+        style="
+          margin-top: 10px;
+          margin-left: 60px;
+          margin-bottom: 10px;
+          font-weight: bold;
+        "
+      ></div>
+
+      <button
+        class="attendance-btn"
+        id="attendance-percentage"
+        style="margin-top: 20px; margin-right: 10px"
+        onclick="calculateAttendancePercentage()"
+      >
+        <i class="bi bi-clipboard-check"></i> Attendance Percentage
+      </button>
+
+      <div
+        id="attendance-percentage-result"
+        style="
+          margin-top: 10px;
+          margin-left: 150px;
+          margin-bottom: 10px;
+          font-weight: bold;
+        "
+      ></div>
+
+      <button
+        class="button"
+        onclick="window.location.href='{{ url_for('index') }}'"
+        style="margin-top: 10px"
+      >
+        <i class="bi bi-arrow-left"></i> Back
+      </button>
+    </div>
+
+    <script>
+      // Function to populate the subject dropdown
+      function populateSubjectDropdown(attendance) {
+        const subjectSelect = document.getElementById("subject-select");
+        const uniqueSubjects = [
+          ...new Set(attendance.map((record) => record.subject)),
+        ];
+
+        uniqueSubjects.forEach((subject) => {
+          const option = document.createElement("option");
+          option.value = subject;
+          option.textContent = subject;
+          subjectSelect.appendChild(option);
+        });
+      }
+
+      // Function to populate the table with the student's attendance
+      function populateAttendanceTable(attendance, subject = null) {
+        const tableBody = document.getElementById("attendance-table-body");
+        tableBody.innerHTML = ""; // Clear previous data
+
+        if (attendance.length === 0) {
+          tableBody.innerHTML =
+            "<tr><td colspan='4'>No attendance records found.</td></tr>";
+          return;
+        }
+
+        // Filter attendance by subject if provided
+        const filteredAttendance = subject
+          ? attendance.filter((record) => record.subject === subject)
+          : attendance;
+
+        filteredAttendance.forEach((record) => {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${record.subject}</td>
+            <td>${record.date}</td>
+            <td>${record.timeSlot}</td>
+            <td>${record.section}</td>
+            <td>${record.status}</td>
+          `;
+          tableBody.appendChild(row);
+        });
+        // Display the total row count for the filtered subject
+        const attendanceCount = document.getElementById("attendance-count");
+        if (subject) {
+          attendanceCount.textContent = `Total Class Attended for ${subject}: ${filteredAttendance.length}`;
+        } else {
+          attendanceCount.textContent = "";
+        }
+      }
+
+      // Function to get attendance data for a specific student
+      function getAttendanceForStudent(studentName, studentId) {
+        const attendanceData =
+          JSON.parse(localStorage.getItem("attendanceData")) || {};
+        const studentAttendance = [];
+
+        // Iterate through sections and subjects to find matching attendance records
+        for (const section in attendanceData) {
+          for (const subject in attendanceData[section]) {
+            attendanceData[section][subject].forEach((record) => {
+              if (
+                record.student_name === studentName &&
+                record.student_id === studentId
+              ) {
+                studentAttendance.push({
+                  subject,
+                  date: record.attendance_date,
+                  timeSlot: record.time_slot,
+                  section: section,
+                  status: record.status,
+                });
+              }
+            });
+          }
+        }
+        return studentAttendance;
+      }
+
+      // Event listener for total-classes-updated event  ON REFRESHING THE PAGE
+      window.addEventListener("total-classes-updated", (event) => {
+        const updatedData = event.data;
+        if (
+          updatedData.subject === displayedSubject &&
+          updatedData.section === displayedSection
+        ) {
+          localStorage.setItem(
+            `${updatedData.subject}_${updatedData.section}_totalClasses`,
+            updatedData.totalClasses
+          );
+        }
+      });
+
+      // Function to calculate attendance percentage
+      function calculateAttendancePercentage() {
+        const studentName = document
+          .getElementById("student-name")
+          .value.trim();
+        const studentId = document.getElementById("student-id").value.trim();
+        const selectedSubjectElement =
+          document.getElementById("subject-select");
+
+        // Check if the dropdown exists and if it's populated
+        if (
+          !studentName ||
+          !studentId ||
+          !selectedSubjectElement ||
+          selectedSubjectElement.value === ""
+        ) {
+          alert("Please enter your details and select a subject.");
+          return;
+        }
+
+        const selectedSubject = selectedSubjectElement.value;
+
+        const attendance = getAttendanceForStudent(studentName, studentId);
+
+        // Filter attendance for the selected subject
+        const filteredAttendance = attendance.filter(
+          (record) => record.subject === selectedSubject
+        );
+        const displayedSubject = filteredAttendance[0].subject;
+        const displayedSection = filteredAttendance[0].section;
+        // Calculate the actual total number of classes for the selected subject
+        let totalClasses =
+          localStorage.getItem(
+            `${displayedSubject}_${displayedSection}_totalClasses`
+          ) || 0;
+
+        // If no data found in localStorage, use the previous logic to calculate totalClasses from filteredAttendance
+        if (!totalClasses) {
+          totalClasses = new Set(
+            filteredAttendance.map(
+              (record) => `${record.date}-${record.timeSlot}`
+            )
+          ).size;
+        }
+        const attendedClasses = filteredAttendance.filter(
+          (record) => record.status === "Present"
+        ).length; // Number of classes attended as 'Present'
+
+        if (totalClasses === 0) {
+          document.getElementById("attendance-percentage-result").textContent =
+            "No classes found for the selected subject.";
+          return;
+        }
+
+        const attendancePercentage = (attendedClasses / totalClasses) * 100;
+
+        // Create a span element to hold the percentage
+        const percentageSpan = document.createElement("span");
+
+        // Set the percentage text and color based on the value
+        if (attendancePercentage >= 85) {
+          percentageSpan.style.color = "green";
+        } else {
+          percentageSpan.style.color = "red";
+        }
+        percentageSpan.textContent = `${attendancePercentage.toFixed(2)}%`;
+
+        // Update the result div
+        document.getElementById(
+          "attendance-percentage-result"
+        ).innerHTML = `Your attendance percentage for ${selectedSubject} is: `;
+        document
+          .getElementById("attendance-percentage-result")
+          .appendChild(percentageSpan);
+      }
+
+      // Handle login form submission
+      document
+        .getElementById("login-form")
+        .addEventListener("submit", (event) => {
+          event.preventDefault(); // Prevent form reload
+
+          const studentName = document
+            .getElementById("student-name")
+            .value.trim();
+          const studentId = document.getElementById("student-id").value.trim();
+
+          if (!studentName || !studentId) {
+            alert("Please enter both name and student ID.");
+            return;
+          }
+
+          // Fetch attendance for the student
+          const attendance = getAttendanceForStudent(studentName, studentId);
+
+          if (attendance.length > 0) {
+            document
+              .getElementById("attendance-container")
+              .classList.remove("hidden");
+            document
+              .getElementById("subject-container")
+              .classList.remove("hidden");
+            populateSubjectDropdown(attendance); // Populate subject dropdown
+            populateAttendanceTable(attendance); // Populate table with all subjects
+          } else {
+            alert("No attendance records found for the given details.");
+          }
+        });
+
+      // Handle filter attendance by subject
+      document
+        .getElementById("filter-attendance")
+        .addEventListener("click", () => {
+          const selectedSubject =
+            document.getElementById("subject-select").value;
+          const studentName = document
+            .getElementById("student-name")
+            .value.trim();
+          const studentId = document.getElementById("student-id").value.trim();
+
+          // Fetch attendance for the student
+          const attendance = getAttendanceForStudent(studentName, studentId);
+
+          // Populate the table with filtered attendance for the selected subject
+          populateAttendanceTable(attendance, selectedSubject);
+        });
+    </script>
+  </body>
+</html>

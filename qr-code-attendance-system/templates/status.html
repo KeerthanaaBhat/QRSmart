@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Attendance Table</title>
+
+    <style>
+      body {
+        margin: 0;
+      }
+      table {
+        width: 1500px;
+        border-collapse: collapse;
+        margin: 20px 15px;
+      }
+      th,
+      td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+      }
+      th {
+        background-color: #536493;
+        color: white;
+        font-size: 14px;
+        padding: 15px 8px;
+      }
+      button {
+        padding: 8px;
+        background-color: #d9534f;
+        color: white;
+        border: none;
+        cursor: pointer;
+        border-radius: 5px;
+      }
+      button:hover {
+        background-color: #c9302c;
+      }
+
+      .dropdown-container {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        max-width: 400px;
+        margin: 20px auto;
+        padding: 20px;
+        background-color: #f9f9f9;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+      label {
+        font-size: 14px;
+        font-weight: bold;
+        margin-bottom: 5px;
+      }
+      select {
+        padding: 10px;
+        font-size: 14px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        background-color: #fff;
+        transition: all 0.3s ease;
+      }
+      select:hover {
+        border-color: #007bff;
+      }
+
+      .dropdown-container select:focus {
+        border-color: #007bff;
+        outline: none;
+      }
+
+      label {
+        font-size: 15px;
+        margin-left: 15px;
+      }
+      select {
+        margin-right: 15px;
+      }
+      input {
+        padding: 8px 0px;
+        font-size: 15px;
+      }
+      #calculate-attendance {
+        margin-left: 10px;
+        padding: 10px 6px;
+      }
+      .container {
+        display: flex;
+        justify-content: space-between; /* Pushes elements to opposite ends */
+        align-items: center; /* Aligns items vertically */
+        background-color: #536493; /* Matches h2 background */
+        margin-bottom: 15px;
+      }
+
+      h2 {
+        flex-grow: 1; /* Allows h2 to take available space */
+        text-align: center;
+        color: white;
+      }
+
+      #aa {
+        text-decoration: none;
+        color: white;
+        background-color: #e60000;
+        padding: 10px 15px;
+        border-radius: 5px;
+        margin-right: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h2>Attendance Table</h2>
+      <a href="{{ url_for('index') }}" id="aa">Back to Timetable</a>
+    </div>
+
+    <label for="section-select">Select Section:</label>
+    <select id="section-select">
+      <option value="">Select Section</option>
+      <option value="1">Section 1</option>
+      <option value="2">Section 2</option>
+      <option value="3">Section 3</option>
+    </select>
+    <label for="subject-select">Select Subject:</label>
+    <select id="subject-select">
+      <option value="">Select Subject</option>
+    </select>
+    <label for="date-select">Select Date:</label>
+    <select id="date-select">
+      <option value="">Select Date</option>
+    </select>
+    <label for="timeslot-select">Select Time Slot:</label>
+    <select id="timeslot-select">
+      <option value="">Select Time Slot</option>
+    </select>
+
+    <table id="attendance-table">
+      <thead>
+        <tr>
+          <th>Student ID</th>
+          <th>Student Name</th>
+          <th>Section ID</th>
+          <th>Subject Name</th>
+          <th>Time Slot</th>
+          <th>Attendance Date</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Rows will be dynamically added here -->
+      </tbody>
+    </table>
+
+    <br />
+    <!-- Dropdowns and Inputs for Attendance Calculation -->
+    <h2 style="margin-top: 5px; color: black">Student Attendance Percentage</h2>
+
+    <div>
+      <label for="section-select">Select Section:</label>
+      <select id="section-select">
+        <option value="">Select Section</option>
+        <option value="1">Section 1</option>
+        <option value="2">Section 2</option>
+        <option value="3">Section 3</option>
+      </select>
+      <!-- Second Subject Dropdown -->
+      <label for="subject-select-after">Select Subject:</label>
+      <select id="subject-select-after">
+        <option value="">Select Subject</option>
+      </select>
+
+      <label for="total-classes">Total Classes: </label>
+      <input type="number" id="total-classes" min="1" />
+
+      <button id="calculate-attendance">Calculate Attendance</button>
+    </div>
+
+    <br />
+
+    <!-- Table to display attendance percentage -->
+    <table id="attendance-percentage-table" style="margin-bottom: -10px">
+      <thead>
+        <tr>
+          <th>Student Name</th>
+          <th>Subject</th>
+          <th>Attendance Percentage</th>
+        </tr>
+      </thead>
+      <tbody id="attendance-percentage-table-body">
+        <!-- Data will be populated here -->
+      </tbody>
+    </table>
+
+    <script>
+      // Function to load attendance data
+      function loadAttendanceData() {
+        const attendanceData =
+          JSON.parse(localStorage.getItem("attendanceData")) || {};
+
+        // Load all attendance data initially
+        loadAttendanceDataBySection(""); // Show all sections
+      }
+
+      // Function to filter or load data by section
+      function loadAttendanceDataBySection(section) {
+        const attendanceData =
+          JSON.parse(localStorage.getItem("attendanceData")) || {};
+
+        const filteredData = section
+          ? attendanceData[section] || []
+          : Object.values(attendanceData).flat();
+
+        // Example: Log filtered data to the console
+        console.log(filteredData);
+
+        // Display data (implement your UI logic here)
+      }
+
+      // Function to load attendance data from localStorage
+      function loadAttendanceData() {
+        const attendanceData =
+          JSON.parse(localStorage.getItem("attendanceData")) || {};
+
+        // Load all attendance data initially
+        loadAttendanceDataBySection(""); // Show all sections
+      }
+
+      function loadSubjectsBySection(selectedSection) {
+        const attendanceData =
+          JSON.parse(localStorage.getItem("attendanceData")) || {};
+        const subjectSelects = [
+          document.getElementById("subject-select"),
+          document.getElementById("subject-select-after"),
+        ];
+
+        // Reset both subject dropdowns
+        subjectSelects.forEach((select) => {
+          select.innerHTML = '<option value="">Select Subject</option>';
+        });
+
+        if (selectedSection) {
+          const sectionData = attendanceData[selectedSection] || {};
+          const subjects = Object.keys(sectionData);
+
+          subjects.forEach((subject) => {
+            subjectSelects.forEach((select) => {
+              const option = document.createElement("option");
+              option.value = subject;
+              option.textContent = subject;
+              select.appendChild(option);
+            });
+          });
+        }
+      }
+
+      // Function to load dates based on the selected section and subject
+      function loadDatesBySectionAndSubject(selectedSection, selectedSubject) {
+        const attendanceData =
+          JSON.parse(localStorage.getItem("attendanceData")) || {};
+        const dateSelect = document.getElementById("date-select");
+        dateSelect.innerHTML = '<option value="">Select Date</option>'; // Reset the date dropdown
+
+        if (selectedSection && selectedSubject) {
+          const sectionData = attendanceData[selectedSection] || {};
+          const subjectData = sectionData[selectedSubject] || [];
+          const dates = new Set();
+          subjectData.forEach((attendance) => {
+            dates.add(attendance.attendance_date);
+          });
+
+          dates.forEach((date) => {
+            const option = document.createElement("option");
+            option.value = date;
+            option.textContent = date;
+            dateSelect.appendChild(option);
+          });
+        }
+      }
+
+      // Function to load time slots based on the selected section, subject, and date
+      function loadTimeSlotsBySectionSubjectAndDate(
+        selectedSection,
+        selectedSubject,
+        selectedDate
+      ) {
+        const attendanceData =
+          JSON.parse(localStorage.getItem("attendanceData")) || {};
+        const timeslotSelect = document.getElementById("timeslot-select");
+        timeslotSelect.innerHTML = '<option value="">Select Time Slot</option>'; // Reset the timeslot dropdown
+
+        if (selectedSection && selectedSubject && selectedDate) {
+          const sectionData = attendanceData[selectedSection] || {};
+          const subjectData = sectionData[selectedSubject] || [];
+          const timeSlots = new Set();
+          subjectData.forEach((attendance) => {
+            if (attendance.attendance_date === selectedDate) {
+              timeSlots.add(attendance.time_slot);
+            }
+          });
+
+          timeSlots.forEach((timeslot) => {
+            const option = document.createElement("option");
+            option.value = timeslot;
+            option.textContent = timeslot;
+            timeslotSelect.appendChild(option);
+          });
+        }
+      }
+
+      // Function to load attendance data based on all selected filters
+      function loadAttendanceDataByFilters(
+        selectedSection,
+        selectedSubject,
+        selectedDate,
+        selectedTimeSlot
+      ) {
+        const attendanceData =
+          JSON.parse(localStorage.getItem("attendanceData")) || {};
+        const tableBody = document.querySelector("#attendance-table tbody");
+        tableBody.innerHTML = ""; // Clear the table body
+
+        if (
+          !selectedSection &&
+          !selectedSubject &&
+          !selectedDate &&
+          !selectedTimeSlot
+        ) {
+          // If no filters are applied, show all data
+          Object.keys(attendanceData).forEach((section) => {
+            const sectionData = attendanceData[section];
+
+            Object.keys(sectionData).forEach((subject) => {
+              const subjectData = sectionData[subject];
+              subjectData.forEach((attendance) => {
+                addRowToTable(attendance);
+              });
+            });
+          });
+        } else {
+          // Filter data based on the selected filters
+          Object.keys(attendanceData).forEach((section) => {
+            if (selectedSection && section !== selectedSection) return; // Skip if section doesn't match
+
+            const sectionData = attendanceData[section];
+
+            Object.keys(sectionData).forEach((subject) => {
+              if (selectedSubject && subject !== selectedSubject) return; // Skip if subject doesn't match
+
+              const subjectData = sectionData[subject];
+              subjectData.forEach((attendance) => {
+                if (
+                  (selectedDate &&
+                    attendance.attendance_date !== selectedDate) ||
+                  (selectedTimeSlot &&
+                    attendance.time_slot !== selectedTimeSlot)
+                ) {
+                  return; // Skip if date or timeslot doesn't match
+                }
+                addRowToTable(attendance);
+              });
+            });
+          });
+        }
+      }
+
+      // Function to add row to the table
+      function addRowToTable(attendance, section, subject) {
+        const tableBody = document.querySelector("#attendance-table tbody");
+        const row = document.createElement("tr");
+        row.innerHTML = `
+    <td>${attendance.student_id}</td>
+    <td>${attendance.student_name}</td>
+    <td>${attendance.section_id}</td>
+    <td>${attendance.subject_name}</td>
+    <td>${attendance.time_slot}</td>
+    <td>${attendance.attendance_date}</td>
+    <td>${attendance.status}</td>
+    <td>
+      <button class="delete-row-button">Clear</button>
+    </td>
+  `;
+
+        // Add event listener for the delete button
+        const deleteButton = row.querySelector(".delete-row-button");
+        deleteButton.addEventListener("click", () => {
+          // Call deleteRow to remove the record from localStorage
+          deleteRow(attendance, section, subject);
+          // Remove the row from the table
+          row.remove();
+        });
+
+        tableBody.appendChild(row);
+      }
+
+      // Function to delete row from localStorage
+      function deleteRow(attendance, section, subject) {
+        const attendanceData =
+          JSON.parse(localStorage.getItem("attendanceData")) || {};
+
+        if (attendanceData[section] && attendanceData[section][subject]) {
+          // Find the index of the attendance record to delete
+          const index = attendanceData[section][subject].findIndex(
+            (record) =>
+              record.student_id === attendance.student_id &&
+              record.attendance_date === attendance.attendance_date &&
+              record.time_slot === attendance.time_slot
+          );
+
+          if (index !== -1) {
+            // Remove the record from the array
+            attendanceData[section][subject].splice(index, 1);
+
+            // If no more records exist for this subject, remove the subject key
+            if (attendanceData[section][subject].length === 0) {
+              delete attendanceData[section][subject];
+            }
+
+            // If no more subjects exist for this section, remove the section key
+            if (Object.keys(attendanceData[section]).length === 0) {
+              delete attendanceData[section];
+            }
+
+            // Update localStorage with the modified attendance data
+            localStorage.setItem(
+              "attendanceData",
+              JSON.stringify(attendanceData)
+            );
+          }
+        }
+      }
+
+      // Function to repopulate the table on page load
+      function populateTable() {
+        const attendanceData =
+          JSON.parse(localStorage.getItem("attendanceData")) || {};
+
+        for (const section in attendanceData) {
+          for (const subject in attendanceData[section]) {
+            attendanceData[section][subject].forEach((attendance) => {
+              addRowToTable(attendance, section, subject);
+            });
+          }
+        }
+      }
+
+      // Call populateTable on page load to populate the table with data from localStorage
+      window.addEventListener("load", populateTable);
+
+      ///////////////////////////////////////////////////
+      // Event listeners for the dropdowns
+      document
+        .getElementById("section-select")
+        .addEventListener("change", (event) => {
+          const selectedSection = event.target.value;
+          loadSubjectsBySection(selectedSection);
+
+          // Clear filters and data in other dropdowns
+          document.getElementById("date-select").innerHTML =
+            '<option value="">Select Date</option>';
+          document.getElementById("timeslot-select").innerHTML =
+            '<option value="">Select Time Slot</option>';
+
+          // Optionally reload table based on section
+          loadAttendanceDataByFilters(selectedSection, "", "", "");
+        });
+      /////////////////////////////////////
+      document
+        .getElementById("subject-select")
+        .addEventListener("change", (event) => {
+          const selectedSection =
+            document.getElementById("section-select").value;
+          const selectedSubject = event.target.value;
+          loadDatesBySectionAndSubject(selectedSection, selectedSubject);
+          loadAttendanceDataByFilters(
+            selectedSection,
+            selectedSubject,
+            document.getElementById("date-select").value,
+            document.getElementById("timeslot-select").value
+          );
+        });
+
+      document
+        .getElementById("date-select")
+        .addEventListener("change", (event) => {
+          const selectedSection =
+            document.getElementById("section-select").value;
+          const selectedSubject =
+            document.getElementById("subject-select").value;
+          const selectedDate = event.target.value;
+          loadTimeSlotsBySectionSubjectAndDate(
+            selectedSection,
+            selectedSubject,
+            selectedDate
+          );
+          loadAttendanceDataByFilters(
+            selectedSection,
+            selectedSubject,
+            selectedDate,
+            document.getElementById("timeslot-select").value
+          );
+        });
+
+      document
+        .getElementById("timeslot-select")
+        .addEventListener("change", (event) => {
+          const selectedSection =
+            document.getElementById("section-select").value;
+          const selectedSubject =
+            document.getElementById("subject-select").value;
+          const selectedDate = document.getElementById("date-select").value;
+          const selectedTimeSlot = event.target.value;
+          loadAttendanceDataByFilters(
+            selectedSection,
+            selectedSubject,
+            selectedDate,
+            selectedTimeSlot
+          );
+        });
+
+      // Load initial data
+      loadAttendanceData();
+
+      // Populate the second subject dropdown with the same options as the first
+      function syncSubjectsToAfterDropdown() {
+        const subjectBeforeDropdown = document.getElementById("subject-select");
+        const subjectAfterDropdown = document.getElementById(
+          "subject-select-after"
+        );
+
+        // Clear the second dropdown
+        subjectAfterDropdown.innerHTML =
+          '<option value="">Select Subject</option>';
+
+        // Copy options from the first dropdown
+        Array.from(subjectBeforeDropdown.options).forEach((option) => {
+          const newOption = document.createElement("option");
+          newOption.value = option.value;
+          newOption.textContent = option.textContent;
+          subjectAfterDropdown.appendChild(newOption);
+        });
+      }
+
+      // Event listener to sync the second dropdown whenever the first is updated
+      document
+        .getElementById("subject-select")
+        .addEventListener("change", syncSubjectsToAfterDropdown);
+
+      document
+        .getElementById("section-select")
+        .addEventListener("change", (event) => {
+          const selectedSection = event.target.value;
+          loadSubjectsBySection(selectedSection); // Updates the first dropdown
+          syncSubjectsToAfterDropdown(); // Sync to the second dropdown
+        });
+
+      document
+        .getElementById("calculate-attendance")
+        .addEventListener("click", () => {
+          const selectedSection =
+            document.querySelectorAll("#section-select")[1].value;
+          const selectedSubject =
+            document.querySelectorAll("#subject-select")[1].value;
+          const totalClasses = document.getElementById("total-classes").value;
+
+          if (!selectedSection || !selectedSubject || !totalClasses) {
+            alert(
+              "Please select a section, subject, and enter the total number of classes."
+            );
+            return;
+          }
+
+          const attendanceData =
+            JSON.parse(localStorage.getItem("attendanceData")) || {};
+          const sectionData = attendanceData[selectedSection] || {};
+          const subjectData = sectionData[selectedSubject] || [];
+
+          const attendanceSummary = {};
+
+          // Calculate attendance percentage for each student
+          subjectData.forEach((attendance) => {
+            const { student_name, status } = attendance;
+            if (!attendanceSummary[student_name]) {
+              attendanceSummary[student_name] = { present: 0, total: 0 };
+            }
+
+            attendanceSummary[student_name].total += 1;
+            if (status === "Present") {
+              attendanceSummary[student_name].present += 1;
+            }
+          });
+
+          // Display the results
+          const tableBody = document.getElementById(
+            "attendance-percentage-table-body"
+          );
+          tableBody.innerHTML = "";
+
+          Object.entries(attendanceSummary).forEach(([studentName, stats]) => {
+            const attendancePercentage = (
+              (stats.present / totalClasses) *
+              100
+            ).toFixed(2);
+            const row = document.createElement("tr");
+            row.innerHTML = `
+              <td>${studentName}</td>
+              <td>${selectedSubject}</td>
+              <td>${attendancePercentage}%</td>
+            `;
+            tableBody.appendChild(row);
+          });
+        });
+
+      /////////////////////////////////////
+      // Function to calculate attendance percentage
+      document
+        .getElementById("calculate-attendance")
+        .addEventListener("click", () => {
+          const selectedSection =
+            document.getElementById("section-select").value;
+          const selectedSubject = document.getElementById(
+            "subject-select-after"
+          ).value;
+          const totalClasses = parseInt(
+            document.getElementById("total-classes").value
+          );
+
+          if (!selectedSection || !selectedSubject || !totalClasses) {
+            alert("Please select all inputs.");
+            return;
+          }
+
+          const attendanceData = JSON.parse(
+            localStorage.getItem("attendanceData")
+          );
+          const sectionData = attendanceData[selectedSection];
+          const subjectData = sectionData[selectedSubject];
+
+          const percentageData = {};
+          subjectData.forEach((entry) => {
+            const { student_name, status } = entry;
+            if (!percentageData[student_name]) {
+              percentageData[student_name] = { presentCount: 0, total: 0 };
+            }
+            percentageData[student_name].total++;
+            if (status === "Present") {
+              percentageData[student_name].presentCount++;
+            }
+          });
+
+          const tableBody = document.getElementById(
+            "attendance-percentage-table-body"
+          );
+          tableBody.innerHTML = "";
+
+          Object.keys(percentageData).forEach((studentName) => {
+            const { presentCount, total } = percentageData[studentName];
+            const percentage = ((presentCount / totalClasses) * 100).toFixed(2);
+
+            const row = document.createElement("tr");
+            row.innerHTML = `
+            <td>${studentName}</td>
+            <td>${selectedSubject}</td>
+            <td>${percentage}%</td>
+          `;
+            tableBody.appendChild(row);
+          });
+        });
+
+      // Load subjects when section changes
+      document
+        .getElementById("section-select")
+        .addEventListener("change", (event) => {
+          const attendanceData =
+            JSON.parse(localStorage.getItem("attendanceData")) || {};
+          const selectedSection = event.target.value;
+          const subjectSelect = document.getElementById("subject-select-after");
+          subjectSelect.innerHTML = '<option value="">Select Subject</option>';
+
+          if (selectedSection) {
+            const sectionData = attendanceData[selectedSection];
+            Object.keys(sectionData).forEach((subject) => {
+              const option = document.createElement("option");
+              option.value = subject;
+              option.textContent = subject;
+              subjectSelect.appendChild(option);
+            });
+          }
+        });
+    </script>
+  </body>
+</html>

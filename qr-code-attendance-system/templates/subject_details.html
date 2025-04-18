@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='styles.css') }}"
+    />
+    <title>Subject Details</title>
+    <style>
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+
+      .details-card {
+        background-color: #f5f5f5;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+      }
+
+      .details-card p {
+        font-size: 18px;
+        margin: 8px 0;
+      }
+
+      .details-card p strong {
+        font-weight: 600;
+        color: #55679c;
+      }
+      p {
+        color: #55679c;
+        font-weight: bold;
+      }
+
+      h1,
+      h2 {
+        color: #55679c;
+        text-align: center;
+      }
+      h1 {
+        font-weight: bolder;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        font-size: 36px;
+        text-transform: uppercase;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 20px 0;
+      }
+
+      table,
+      th,
+      td {
+        border: 1px solid #ddd;
+      }
+
+      th,
+      td {
+        padding: 12px;
+        text-align: left;
+      }
+
+      th {
+        background-color: #55679c;
+        color: white;
+      }
+
+      tbody tr:nth-child(even) {
+        background-color: #f9f9f9;
+      }
+
+      tbody tr:hover {
+        background-color: #f1f1f1;
+      }
+
+      a {
+        display: inline-block;
+        margin-top: 20px;
+        text-decoration: none;
+        padding: 10px 15px;
+        background-color: #55679c;
+        color: white;
+        border-radius: 5px;
+        transition: background-color 0.3s ease;
+      }
+
+      a:hover {
+        background-color: #45679c;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Subject Details</h1>
+
+      <!-- Details Section Styled -->
+      <div class="details-card">
+        <p><strong>Subject:</strong> {{ subject }}</p>
+        <p><strong>Day:</strong> {{ day }}</p>
+        <p><strong>Section:</strong> {{ section }}</p>
+      </div>
+
+      <!-- Lecturer details -->
+      <h2>Lecturer Details</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Lecturer ID</th>
+            <th>Lecturer Name</th>
+            <th>Subject</th>
+            <th>Start Time</th>
+            <th>End Time</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>{{ lecturer_info.lecturer_id }}</td>
+            <td>{{ lecturer_info.lecturer_name }}</td>
+            <td>{{ lecturer_info.subject_name }}</td>
+            <td>{{ lecturer_info.time_start }}</td>
+            <td>{{ lecturer_info.time_end }}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Students details -->
+      <h2>Students</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Student ID</th>
+            <th>Student Name</th>
+            <th>Section</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for student in students %}
+          <tr>
+            <td>{{ student.student_id }}</td>
+            <td>{{ student.student_name }}</td>
+            <td>{{ student.section_name }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <a href="{{ url_for('index') }}">Back to Timetable</a>
+    </div>
+  </body>
+</html>

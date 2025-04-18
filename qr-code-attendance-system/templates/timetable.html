@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ lecturer_name }}'s Timetable</title>
+    <!-- Bootstrap CSS -->
+    <link
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='timetable.css') }}"
+    />
+    <!-- Font Awesome for mark icon -->
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: sans-serif;
+        background-color: #f4f4f4; /* Light Gray Background */
+      }
+      .card {
+        border: none;
+        border-radius: 0.5rem;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      }
+      .fab-container {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .fab {
+        position: relative;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        font-size: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        transition: background-color 0.3s ease;
+      }
+
+      .fab i {
+        color: #fff;
+      }
+
+      .fab:hover {
+        background-color: #333;
+      }
+
+      .fab::after {
+        content: "";
+        position: absolute;
+        bottom: 50%;
+        right: 70px;
+        transform: translateY(50%);
+        opacity: 0;
+        visibility: hidden;
+        background-color: #333;
+        color: #fff;
+        padding: 5px 10px;
+        border-radius: 4px;
+        font-size: 12px;
+        white-space: nowrap;
+        transition: opacity 0.3s ease, visibility 0.3s ease;
+      }
+
+      /* Show the label when hovering */
+      .fab:hover::after {
+        opacity: 1;
+        visibility: visible;
+      }
+
+      /* Button-specific labels */
+      .fab.btn-primary:hover::after {
+        content: "View Timetable";
+      }
+
+      .fab.btn-dark:hover::after {
+        content: "View Dashboard";
+      }
+
+      .fab.btn-secondary:hover::after {
+        content: "QR Scan";
+      }
+
+      .fab.btn-success:hover::after {
+        content: "QR Upload";
+      }
+
+      .fab.btn-info:hover::after {
+        content: "Check Attendance";
+      }
+
+      .fab.btn-danger:hover::after {
+        content: "Logout";
+      }
+
+      .fab.btn-warning:hover::after {
+        content: "Status";
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container-fluid">
+      <h1>
+        <i class="bi bi-calendar2-check-fill"></i> {{ lecturer_name }}'s
+        Timetable
+      </h1>
+
+      <div id="sectionCountDisplay"></div>
+
+      <div class="mb-3">
+        <button
+          class="btn btn-info"
+          id="classCountButton"
+          onclick="toggleTable()"
+        >
+          <i class="fas fa-calendar-check"></i> Classes Taken for Subject
+        </button>
+
+        <!-- Table to show the classes taken for the subject (Initially hidden) -->
+        <div id="classesTakenContainer" style="display: none">
+          <!-- Dropdown to select section -->
+          <select
+            id="sectionFilter"
+            class="form-control w-25 mt-3"
+            onchange="filterTable()"
+          >
+            <option value="all">All Sections</option>
+            <option value="1">Section A</option>
+            <option value="2">Section B</option>
+            <option value="3">Section C</option>
+          </select>
+
+          <!-- Placeholder for total count -->
+          <p id="sectionCount" class="mt-2"></p>
+
+          <table
+            id="classesTakenTable"
+            class="table table-bordered table-striped"
+          >
+            <thead>
+              <tr>
+                <th>Lecturer Name</th>
+                <th>Subject Name</th>
+                <th>Section</th>
+                <th>Time Slot</th>
+                <th>Date</th>
+                <th>Delete</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Rows will be added dynamically here -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <div class="row">
+          {% set timetable_list = timetable_data.items() | list %}
+          <!-- First row: 3 tables (Monday, Tuesday, Wednesday) -->
+          {% for i in range(0, 3) %} {% if i < timetable_list|length %}
+          <div class="col-lg-4 col-md-6 day-table">
+            <div class="card shadow-sm">
+              <div class="card-header text-white">
+                <h3>{{ timetable_list[i][0] }}</h3>
+              </div>
+              <div class="card-body">
+                <table class="table table-bordered table-striped">
+                  <thead>
+                    <tr>
+                      <th>Time Slot</th>
+                      <th>Section</th>
+                      <th>Subject</th>
+                      <th>Mark</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for entry in timetable_list[i][1] %}
+                    <tr>
+                      <td>{{ entry.time_slot }}</td>
+                      <td>{{ entry.section }}</td>
+                      <td>{{ entry.subject }}</td>
+                      <td>
+                        <button
+                          class="btn btn-sm btn-primary btn-mark"
+                          style="font-size: 0.7rem; padding: 5px 10px"
+                          data-toggle="modal"
+                          data-target="#markModal"
+                          onclick="setModalData('{{ entry.time_slot }}', '{{ entry.section }}', '{{ entry.subject }}')"
+                        >
+                          <i class="fas fa-check"></i>
+                        </button>
+                      </td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          {% endif %} {% endfor %}
+        </div>
+
+        <div class="row">
+          <!-- Second row: 2 tables (Thursday, Friday) -->
+          {% for i in range(3, 5) %} {% if i < timetable_list|length %}
+          <div class="col-lg-6 col-md-6 day-table mt-4">
+            <div class="card shadow-sm">
+              <div class="card-header text-white">
+                <h3>{{ timetable_list[i][0] }}</h3>
+              </div>
+              <div class="card-body">
+                <table class="table table-bordered table-striped">
+                  <thead>
+                    <tr>
+                      <th>Time Slot</th>
+                      <th>Section</th>
+                      <th>Subject</th>
+                      <th>Mark</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for entry in timetable_list[i][1] %}
+                    <tr>
+                      <td>{{ entry.time_slot }}</td>
+                      <td>{{ entry.section }}</td>
+                      <td>{{ entry.subject }}</td>
+                      <td>
+                        <button
+                          class="btn btn-sm btn-primary btn-mark"
+                          style="font-size: 0.7rem; padding: 5px 10px"
+                          data-toggle="modal"
+                          data-target="#markModal"
+                          onclick="setModalData('{{ entry.time_slot }}', '{{ entry.section }}', '{{ entry.subject }}')"
+                        >
+                          <i class="fas fa-check"></i>
+                        </button>
+                      </td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          {% endif %} {% endfor %}
+        </div>
+      </div>
+
+      <button
+        class="button"
+        onclick="window.location.href='{{ url_for('index') }}'"
+        id="aa"
+      >
+        <i class="bi bi-arrow-left"></i> Back To Timetable
+      </button>
+    </div>
+
+    <div class="fab-container">
+      <button
+        class="fab btn btn-primary"
+        onclick="window.location.href='timetable'"
+      >
+        <i class="fas fa-calendar"></i>
+      </button>
+      <button
+        class="fab btn btn-dark"
+        onclick="window.location.href='dashboard'"
+      >
+        <i class="fas fa-chalkboard-teacher"></i>
+      </button>
+      <button class="fab btn btn-secondary" onclick="window.location.href='qr'">
+        <i class="fas fa-qrcode"></i>
+      </button>
+      <button
+        class="fab btn btn-success"
+        onclick="window.location.href='student'"
+      >
+        <i class="fas fa-upload"></i>
+      </button>
+      <button class="fab btn btn-info" onclick="window.location.href='status'">
+        <i class="fas fa-check-circle"></i>
+      </button>
+      <button
+        class="fab btn btn-warning"
+        onclick="window.location.href='attendance'"
+      >
+        <i class="fas fa-clipboard-list"></i>
+      </button>
+      <button
+        class="fab btn btn-danger"
+        onclick="window.location.href='{{ url_for('logout') }}'"
+      >
+        <i class="fas fa-sign-out-alt"></i>
+      </button>
+    </div>
+
+    <!-- Mark Modal -->
+    <div
+      class="modal fade"
+      id="markModal"
+      tabindex="-1"
+      role="dialog"
+      aria-labelledby="markModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="markModalLabel">Mark Attendance</h5>
+            <button
+              type="button"
+              class="close"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <form id="markAttendanceForm">
+              <div class="form-group">
+                <label for="dateInput">Date</label>
+                <input
+                  type="date"
+                  class="form-control"
+                  id="dateInput"
+                  required
+                />
+              </div>
+              <div class="form-group">
+                <label for="sectionInput">Section</label>
+                <input
+                  type="number"
+                  class="form-control"
+                  id="sectionInput"
+                  placeholder="Enter section number"
+                  required
+                />
+              </div>
+              <!-- Add Lecturer Name to the Modal -->
+              <div class="form-group">
+                <label for="lecturerNameInput">Lecturer Name</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="lecturerNameInput"
+                  value="{{ lecturer_name }}"
+                  readonly
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="subjectInput">Subject</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="subjectInput"
+                  readonly
+                />
+              </div>
+              <div class="form-group">
+                <label for="timeSlotInput">Time Slot</label>
+                <input
+                  type="text"
+                  id="timeSlotInput"
+                  value=""
+                  class="form-control"
+                  readonly
+                />
+              </div>
+              <button type="submit" class="btn btn-primary">Mark Class</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <script>
+      function deleteRow(button) {
+        // Get the row that contains the clicked button
+        var row = button.closest("tr");
+
+        // Get the index of the row (assuming the data is stored in localStorage)
+        var rowIndex = row.rowIndex - 1; // Adjust based on your table structure (header row offset)
+
+        // Retrieve the current classes from localStorage
+        var classesTaken =
+          JSON.parse(localStorage.getItem("classesTaken")) || [];
+
+        // Remove the item from your data source array
+        classesTaken.splice(rowIndex, 1); // Remove the entry from the array
+
+        // Save the updated array back to localStorage
+        localStorage.setItem("classesTaken", JSON.stringify(classesTaken));
+
+        // Remove the row from the table (visual deletion)
+        row.remove();
+      }
+
+      // Function to toggle visibility of the table
+      function toggleTable() {
+        var tableContainer = document.getElementById("classesTakenContainer");
+        if (tableContainer.style.display === "none") {
+          tableContainer.style.display = "block";
+          filterTable(); // Apply filtering immediately when toggling
+        } else {
+          tableContainer.style.display = "none";
+        }
+      }
+
+      function filterTable() {
+        var loggedInLecturer = "{{ lecturer_name }}";
+        var filterValue = document.getElementById("sectionFilter").value;
+        var table = document.getElementById("classesTakenTable");
+        var rows = table
+          .getElementsByTagName("tbody")[0]
+          .getElementsByTagName("tr");
+        var count = 0;
+        var subjectCounts = {}; // Create an object to store counts for each subject (section, subject) pair
+
+        for (var i = 0; i < rows.length; i++) {
+          var lecturerCell = rows[i].getElementsByTagName("td")[0];
+          var sectionCell = rows[i].getElementsByTagName("td")[2];
+          var subjectCell = rows[i].getElementsByTagName("td")[1];
+
+          if (lecturerCell && sectionCell && subjectCell) {
+            var lecturer = lecturerCell.textContent || lecturerCell.innerText;
+            var section = sectionCell.textContent || sectionCell.innerText;
+            var subject = subjectCell.textContent || subjectCell.innerText;
+
+            if (
+              lecturer === loggedInLecturer &&
+              (filterValue === "all" || section === filterValue)
+            ) {
+              rows[i].style.display = "";
+              // Increment count for the specific subject and section combination
+              var subjectSectionKey = `${section}-${subject}`;
+              if (!subjectCounts[subjectSectionKey]) {
+                subjectCounts[subjectSectionKey] = 0;
+              }
+              subjectCounts[subjectSectionKey]++;
+              count++;
+            } else {
+              rows[i].style.display = "none";
+            }
+          }
+        }
+
+        // Display the count for the currently displayed subject and section
+        var sectionCount = document.getElementById("sectionCount");
+        if (filterValue === "all") {
+          // Handle the case where all sections are selected
+          // (you might want to display the total count for all sections here)
+        } else {
+          // Get the subject and section of the first visible row
+          var firstVisibleRow = Array.from(rows).find(
+            (row) => row.style.display !== "none"
+          );
+          if (firstVisibleRow) {
+            var displayedSubject = firstVisibleRow.cells[1].textContent;
+            var displayedSection = firstVisibleRow.cells[2].textContent;
+            var subjectSectionKey = `${displayedSection}-${displayedSubject}`;
+            sectionCount.textContent = `Total Classes in Section ${displayedSection} for ${displayedSubject} Taken by ${loggedInLecturer}: ${
+              subjectCounts[subjectSectionKey] || 0
+            }`;
+
+            // Storing total classes for a specific subject and section
+            localStorage.setItem(
+              `${displayedSubject}_${displayedSection}_totalClasses`,
+              subjectCounts[subjectSectionKey] || 0
+            );
+          } else {
+            sectionCount.textContent = "";
+          }
+        }
+      }
+
+      //ON REFRESHING THE PAGEEEE
+
+      document
+        .getElementById("markAttendanceForm")
+        .addEventListener("submit", function (event) {
+          event.preventDefault();
+
+          // Create an object to store the attended class information
+          var attendedClass = {
+            lecturerName: lecturerName,
+            subject: subject,
+            section: section,
+            timeSlot: timeSlot,
+            date: date,
+          };
+
+          // Retrieve existing attended classes from localStorage
+          var attendedClasses =
+            JSON.parse(localStorage.getItem("attendedClasses")) || [];
+
+          // Add the new attended class to the array
+          attendedClasses.push(attendedClass);
+
+          // Store the updated array in localStorage
+          localStorage.setItem(
+            "attendedClasses",
+            JSON.stringify(attendedClasses)
+          );
+
+          // ... (rest of the code: add row to table, close modal, etc.) ...
+        });
+
+      window.onload = function () {
+        var attendedClasses =
+          JSON.parse(localStorage.getItem("attendedClasses")) || [];
+
+        // Get the table body element
+        var table = document
+          .getElementById("classesTakenTable")
+          .getElementsByTagName("tbody")[0];
+
+        // Loop through the stored classes and add rows to the table
+        attendedClasses.forEach(function (classData) {
+          var newRow = table.insertRow(table.rows.length);
+          newRow.innerHTML =
+            "<td>" +
+            classData.lecturerName +
+            "</td>" +
+            "<td>" +
+            classData.subject +
+            "</td>" +
+            "<td>" +
+            classData.section +
+            "</td>" +
+            "<td>" +
+            classData.timeSlot +
+            "</td>" +
+            "<td>" +
+            classData.date +
+            "</td>" +
+            "<td>" +
+            "<button class='btn btn-sm btn-danger delete-btn' style='font-size: 0.7rem; padding: 5px 5px' onclick='deleteRow(this)'>" +
+            "<i class='fas fa-trash-alt'></i> Delete" +
+            "</button>" +
+            "</td>";
+        });
+      };
+
+      // Set the modal data when the mark button is clicked
+      function setModalData(timeSlot, section, subject) {
+        document.getElementById("dateInput").value = ""; // Clear previous value
+        document.getElementById("sectionInput").value = section;
+        document.getElementById("subjectInput").value = subject;
+        document.getElementById("timeSlotInput").value = timeSlot;
+        document.getElementById("lecturerNameInput").value = lecturerName;
+      }
+
+      document
+        .getElementById("markAttendanceForm")
+        .addEventListener("submit", function (event) {
+          event.preventDefault();
+
+          var date = document.getElementById("dateInput").value;
+          var section = document.getElementById("sectionInput").value;
+          var subject = document.getElementById("subjectInput").value;
+          var timeSlot = document.getElementById("timeSlotInput").value;
+          var lecturerName = document.getElementById("lecturerNameInput").value;
+
+          // Prepare the new class entry object
+          var newClass = {
+            lecturerName: lecturerName,
+            subject: subject,
+            section: section,
+            timeSlot: timeSlot,
+            date: date,
+          };
+
+          // Retrieve the current classes from localStorage (or initialize an empty array)
+          var classesTaken =
+            JSON.parse(localStorage.getItem("classesTaken")) || [];
+
+          // Add the new class entry to the array
+          classesTaken.push(newClass);
+
+          // Save the updated array back to localStorage
+          localStorage.setItem("classesTaken", JSON.stringify(classesTaken));
+
+          // Add data to the classesTakenTable
+          var table = document
+            .getElementById("classesTakenTable")
+            .getElementsByTagName("tbody")[0];
+          var newRow = table.insertRow(table.rows.length);
+          newRow.innerHTML =
+            "<td>" +
+            lecturerName +
+            "</td>" +
+            "<td>" +
+            subject +
+            "</td>" +
+            "<td>" +
+            section +
+            "</td>" +
+            "<td>" +
+            timeSlot +
+            "</td>" +
+            "<td>" +
+            date +
+            "</td>" +
+            "<td>" +
+            "<button class='btn btn-sm btn-danger delete-btn' style='font-size: 0.7rem; padding: 5px 10px' onclick='deleteRow(this)'>" +
+            "<i class='fas fa-trash-alt'></i> Delete" +
+            "</button>" +
+            "</td>";
+
+          // Close the modal
+          $("#markModal").modal("hide");
+        });
+
+      window.onload = function () {
+        // Retrieve the stored classes from localStorage
+        var classesTaken =
+          JSON.parse(localStorage.getItem("classesTaken")) || [];
+
+        // Get the table body element
+        var table = document
+          .getElementById("classesTakenTable")
+          .getElementsByTagName("tbody")[0];
+
+        // Loop through the stored classes and add rows to the table
+        classesTaken.forEach(function (classData) {
+          var newRow = table.insertRow(table.rows.length);
+          newRow.innerHTML =
+            "<td>" +
+            classData.lecturerName +
+            "</td>" +
+            "<td>" +
+            classData.subject +
+            "</td>" +
+            "<td>" +
+            classData.section +
+            "</td>" +
+            "<td>" +
+            classData.timeSlot +
+            "</td>" +
+            "<td>" +
+            classData.date +
+            "</td>" +
+            "<td>" +
+            "<button class='btn btn-sm btn-danger delete-btn' style='font-size: 0.6rem; padding: 5px 5px' onclick='deleteRow(this)'>" +
+            "<i class='fas fa-trash-alt'></i> Delete" +
+            "</button>" +
+            "</td>";
+        });
+      };
+    </script>
+  </body>
+</html>

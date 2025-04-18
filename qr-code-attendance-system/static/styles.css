@@ -1,0 +1,433 @@
+      /* Reset basic margins and padding for full width */
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        
+      }
+
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        overflow-x: hidden; /* Prevent horizontal scrolling */
+        background-color: #d5d0d050;
+      }
+
+      span {
+        color: rgb(93, 88, 88);
+      }
+
+      /* Full-width header */
+      .header {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 5px;
+        background-color: #f8f8f8; 
+        margin-top: -6px;
+        border-bottom: 1px solid #ccc; 
+      }
+
+      .title {
+        margin: 0;
+        font-size: 24px; /* Title font size */
+      }
+
+      .contents {
+        display: flex;
+        justify-content: space-between;
+        align-items: center; /* Vertically align them */
+        width: 100%;
+        padding: 0 150px;
+      }
+
+
+      .edit-button {
+        padding: 12px 16px;  /* Adjust the values as needed */
+        font-size: 16px;     /* Optional: Adjust font size */
+        border: none;
+        background-color: #55679c; /* Button background */
+        color: white; /* White text */
+        border-radius: 5px; /* Rounded corners */
+        transition: background-color 0.3s;  
+        cursor: pointer;
+      }
+
+      /* Styling the form */
+
+/* Modal background */
+.modal {
+  display: none; /* Hidden by default */
+  position: fixed; /* Fixed position to cover the entire page */
+  top: 0;
+  left: 0;
+  width: 50%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+  z-index: 1000; /* Ensure the modal is above all content */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Modal content box */
+.modal-content {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  width: 30%; 
+  max-width: 450px; /* Max width to prevent it from becoming too large */
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+/* Close button styling */
+.close {
+  color: #aaa;
+  font-size: 28px;
+  font-weight: bold;
+  position: absolute;
+  top: 10px;
+  right: 20px;
+  cursor: pointer;
+}
+
+.close:hover,
+.close:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+/* Timetable form styling */
+.timetable-form label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: bold;
+}
+
+.timetable-form select,
+.timetable-form input {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.submit-button {
+  display: block;
+  width: 50%;
+  margin: 0 auto;
+  padding: 10px;
+  background-color: #55679c;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.submit-button:hover {
+  background-color: #0056b3;
+}
+
+
+
+
+      /* Center the Attendance button */
+      .attendance-button-container {
+        text-align: center;
+        margin-top: 20px;
+        margin-bottom: 20px;
+      }
+
+      .attendance-button {
+        padding: 10px 20px;
+        font-size: 16px;
+        background-color: #55679c;
+        color: white;
+        border: none;
+        cursor: pointer;
+        border-radius: 5px;
+      }
+
+
+      
+
+      /* Full-width button section */
+      .section-buttons {
+        display: flex;
+      }
+
+      .section-buttons button {
+        margin-left: 10px; /* Space between buttons */
+        padding: 10px 15px; /* Button padding */
+        font-size: 16px; /* Button font size */
+        cursor: pointer; /* Pointer cursor on hover */
+        border: none;
+        background-color: #55679c; /* Button background */
+        color: white; /* White text */
+        border-radius: 5px; /* Rounded corners */
+        transition: background-color 0.3s; /* Smooth background transition */
+      }
+
+      .section-buttons button:hover {
+        background-color: #6a7ebb; /* Darker background on hover */
+      }
+
+      /* Remove container to allow full-width layout */
+      h1 {
+        text-align: center;
+        color: #333;
+        padding: 20px;
+      }
+
+.timetable-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px; /* Space between the heading and the table */
+}
+
+.timetable-section h2 {
+  flex-grow: 1; /* Let h2 take remaining space to center it */
+  text-align: center;
+}
+
+.dropdown-container {
+  margin-left: 20px; /* Optional: Adjust to control spacing */
+}
+
+table {
+  width: 80%;
+  border-collapse: collapse;
+  margin: 0 auto;
+}
+
+.dd select {
+     
+    padding: 10px;    /* Add padding inside the dropdown */
+    border-radius: 5px; /* Optional: To make it look a bit nicer */
+    font-size: 16px;   
+    cursor: pointer;
+  }
+
+  #sectionDropdown{
+    border-color: #536493;
+  }
+  
+  #h2heading {
+    margin-bottom: 3px;
+    font-size:28px;
+    font-weight: bold;           /* Makes the text bold */
+    color: #000000;              /* A nice blue color */
+    text-transform: uppercase;    /* Converts text to uppercase */
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);  /* Adds a subtle shadow */
+    padding-bottom: 5px;          /* Adds space below the text */
+  }
+  #h1heading {
+    font-size: 36px;
+    font-weight: bold;           /* Makes the text bold */
+    color: #65679c;              /* A nice blue color */
+    text-transform: uppercase;    /* Converts text to uppercase */
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);  /* Adds a subtle shadow */
+    padding-bottom: 5px;    
+    margin-top: -15px;
+  } 
+  #StudentBase{
+    font-size:28px;
+    font-weight: bold;           /* Makes the text bold */
+    color: #000000;              /* A nice blue color */
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);  /* Adds a subtle shadow */
+    padding-bottom: 15px;  
+  }
+th,
+td {
+  padding: 11px;
+  text-align: center;
+  border: 1px solid #ddd;
+}
+
+th {
+  background-color: #55679c;
+  color: white;
+}
+
+td {
+  background-color: #f9f9f9;
+  transition: background-color 0.3s;
+}
+
+td:hover {
+  background-color: #f1f1f1;
+  cursor: pointer;
+}
+
+
+.details {
+    margin-top: 20px;
+    padding: 15px;
+    border: 1px solid #55679C;
+    border-radius: 5px;
+    background-color: #f0f8ff;
+}
+
+.details h2 {
+    margin-top: 0;
+}
+
+
+/* modal*/
+.students-section {
+    display: none; /* Hide sections by default */
+    margin-top: 10px;
+}
+.section-button {
+    margin: 5px;
+    padding: 10px;
+    background-color: #55679C;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+.section-button:hover {
+    background-color: #0056b3;
+}
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgb(0, 0, 0); /* Fallback color */
+    background-color: rgba(0, 0, 0, 0.4); /* Black w/ opacity */
+}
+.modal-content {
+    background-color: #fefefe;
+    margin: 15% auto; /* 15% from the top and centered */
+    padding: 20px;
+    border: 1px solid #888;
+    width: 30%; /* Could be more or less, depending on screen size */
+    text-align: center; /* Center align content */
+}
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+.close:hover,
+.close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+
+/* Style for the color legend container */
+.color-legend {
+    display: flex;
+    justify-content: space-around; /* Evenly space out color boxes */
+    margin: 20px 0;
+  }
+  
+  /* Style for individual color box */
+  .color-box {
+    text-align: center;
+    margin: 0 15px;
+  }
+  
+  /* Style for the color square */
+  .color-box .color {
+    width: 50px;  /* Width of the color box */
+    height: 50px; /* Height of the color box */
+    border-radius: 5px;
+    margin-bottom: 10px;
+  }
+  
+  /* Style for faculty name below the color */
+  .color-box .faculty-name {
+    font-size: 14px;
+    color: #333; /* Text color */
+  }
+  
+/* Styles for Update and Delete buttons */
+.update-button, .delete-button {
+    padding: 10px 15px; /* Adjust padding for button size */
+    border: none; /* Remove default border */
+    border-radius: 5px; /* Rounded corners */
+    color: white; /* Text color */
+    cursor: pointer; /* Change cursor to pointer on hover */
+    margin: 0 5px; /* Space between buttons */
+    font-size: 14px; /* Font size */
+    transition: background-color 0.3s, transform 0.2s; /* Animation for hover effects */
+}
+
+.update-button {
+    background-color: #536493; /* Green background for update */
+}
+
+.delete-button {
+    background-color: #cd485c; /* Red background for delete */
+}
+
+/* Hover effects */
+.update-button:hover {
+    background-color: #5e6d9c; /* Darker green on hover */ 
+}
+
+.delete-button:hover {
+    background-color: #C63C51; /* Darker red on hover */
+}
+
+
+  
+.add-student-button {
+    position: relative; /* Position relative to form */
+    right: 130%; /* Reset right positioning */
+    background-color: #C63C51; /* Desired background color */
+    color: white; /* Text color */
+    border: none; /* No border */
+    padding: 10px 15px; /* Padding for the button */
+    text-align: center; /* Center text */
+    text-decoration: none; /* Remove underline */
+    display: inline-block; /* Allows padding to work */
+    font-size: 16px; /* Font size */
+    border-radius: 5px; /* Rounded corners */
+    cursor: pointer; /* Pointer cursor on hover */
+    transition: background-color 0.3s; /* Smooth transition */
+    
+}
+
+
+.add-student-button:hover {
+    background-color: #5e6d9c; 
+}
+
+/*return home*/
+#aa {
+  display: inline-block;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  text-decoration: none;
+  padding: 10px 15px;
+  background-color: #55679c;
+  color: white;
+  border-radius: 5px;
+  transition: background-color 0.3s ease;
+  margin-left: 10%;
+}
+
+#aa:hover {
+  background-color: #45679c;
+}
+
+  

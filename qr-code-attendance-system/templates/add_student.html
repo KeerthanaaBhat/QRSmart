@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Add Student</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 20px;
+      }
+
+      h1 {
+        text-align: center;
+        color: #55679c;
+        font-size: 2.5em; /* Increased font size */
+        padding: 15px; /* Padding around the text */
+        border-radius: 8px; /* Rounded corners */
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05); /* Shadow for depth */
+        display: flex;
+        align-items: center; /* Center items vertically */
+        justify-content: center; /* Center items horizontally */
+      }
+
+      form {
+        max-width: 400px;
+        margin: 0 auto;
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+
+      label {
+        display: block;
+        margin-bottom: 8px;
+        color: #555;
+      }
+
+      input[type="text"] {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 15px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+      }
+
+      input[type="submit"] {
+        background-color: #55679c;
+        color: white; /* White text */
+        border: none; /* No border */
+        padding: 10px 15px; /* Some padding */
+        text-align: center; /* Center text */
+        text-decoration: none; /* Remove underline */
+        display: inline-block; /* Block element */
+        font-size: 16px; /* Font size */
+        border-radius: 5px; /* Rounded corners */
+        cursor: pointer; /* Pointer cursor */
+        width: 100%; /* Full width */
+      }
+
+      input[type="submit"]:hover {
+        background-color: #5e6d9c;
+      }
+
+      a {
+        display: block;
+        text-align: center;
+        margin-top: 20px;
+        color: #55679c;
+        text-decoration: none; /* Remove underline */
+        font-weight: bold; /* Bold text */
+        padding: 10px; /* Padding for clickable area */
+        border-radius: 5px; /* Rounded corners */
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Add Student</h1>
+    <form action="{{ url_for('add_student') }}" method="POST">
+      <label for="student_id">Student ID:</label>
+      <input type="text" id="student_id" name="student_id" required />
+
+      <label for="student_name">Student Name:</label>
+      <input type="text" id="student_name" name="student_name" required />
+
+      <label for="section_id">Section ID:</label>
+      <input type="text" id="section_id" name="section_id" required />
+
+      <label for="qr_code">QR Code:</label>
+      <input type="text" id="qr_code" name="qr_code" required />
+
+      <input type="submit" value="Add Student" />
+    </form>
+    <a href="{{ url_for('index') }}">Back to Home</a>
+  </body>
+</html>

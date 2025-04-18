@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ student_name }}'s Dashboard</title>
+    <!-- Bootstrap CSS -->
+    <link
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='timetable.css') }}"
+    />
+    <!-- Font Awesome for mark icon -->
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: sans-serif;
+        background-color: #f4f4f4; /* Light Gray Background */
+      }
+      .card {
+        border: none;
+        border-radius: 0.5rem;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      }
+      .upload-btn {
+        margin-top: 10px; /* Add some space above the button */
+      }
+
+      .uploaded {
+        color: green; /* Style for the tick mark */
+        margin-left: 5px; /* Space between date and tick */
+      }
+      .due-date {
+        /* Style for due date in the list */
+        color: white;
+        background-color: red;
+        border-radius: 20px;
+        font-size: 12px;
+        padding: 3px;
+      }
+      .fab-container {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .fab {
+        position: relative;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        font-size: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        transition: background-color 0.3s ease;
+      }
+
+      .fab i {
+        color: #fff;
+      }
+
+      .fab:hover {
+        background-color: #333;
+      }
+
+      .fab::after {
+        content: "";
+        z-index: 1000;
+        position: absolute;
+        bottom: 50%;
+        right: 70px;
+        transform: translateY(50%);
+        opacity: 0;
+        visibility: hidden;
+        background-color: #333;
+        color: #fff;
+        padding: 5px 10px;
+        border-radius: 4px;
+        font-size: 12px;
+        white-space: nowrap;
+        transition: opacity 0.3s ease, visibility 0.3s ease;
+      }
+
+      /* Show the label when hovering */
+      .fab:hover::after {
+        opacity: 1;
+        visibility: visible;
+        overflow: visible;
+      }
+
+      /* Button-specific labels */
+      .fab.btn-primary:hover::after {
+        content: "View Timetable";
+      }
+
+      .fab.btn-dark:hover::after {
+        content: "View Dashboard";
+      }
+
+      .fab.btn-secondary:hover::after {
+        content: "QR Scan";
+      }
+
+      .fab.btn-success:hover::after {
+        content: "QR Upload";
+      }
+
+      .fab.btn-info:hover::after {
+        content: "Check Attendance";
+      }
+
+      .fab.btn-danger:hover::after {
+        content: "Logout";
+      }
+
+      .fab.btn-warning:hover::after {
+        content: "Status";
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container-fluid mt-5">
+      <div class="card p-3 mb-3 text-dark bg-light">
+        <h2 class="text-center">
+          <i class="fas fa-chalkboard-teacher"></i> {{ student_name }} Dashboard
+        </h2>
+        <h3 id="subjectName"></h3>
+        <h5 id="lectureName"></h5>
+      </div>
+
+      <div class="row">
+        <div class="col-md-4">
+          <div class="card">
+            <div class="card-header bg-success text-white">
+              <i class="fas fa-tasks"></i> Assignments
+            </div>
+            <div class="card-body">
+              <ul id="assignmentList" class="list-group"></ul>
+              <div id="assignmentDetails" class="mt-3 p-3 border rounded"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-4">
+          <div class="card">
+            <div class="card-header bg-warning text-white">
+              <i class="fas fa-bullhorn"></i> Announcements
+            </div>
+            <div class="card-body">
+              <ul id="announcementList" class="list-group"></ul>
+              <div
+                id="announcementDetails"
+                class="mt-3 p-3 border rounded"
+              ></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-4 container">
+          <div class="card">
+            <div class="card-header bg-info text-white">
+              <i class="fas fa-calendar-alt"></i> Events
+            </div>
+            <div class="card-body" style="margin-top: -15px">
+              <div
+                id="savedEvents"
+                class="mt-3 p-3 border rounded event-list"
+              ></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="container-fluid mt-4">
+        <div class="row">
+          <div class="col-12">
+            <div class="card shadow-sm">
+              <div class="card-header bg-dark text-white">
+                <i class="fas fa-folder-open"></i> Class Resources
+              </div>
+              <div class="card-body">
+                <ul id="resourceList" class="list-group"></ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <button
+      class="button"
+      onclick="window.location.href='{{ url_for('index1') }}'"
+      id="aa"
+    >
+      <i class="bi bi-arrow-left"></i> Back To Timetable
+    </button>
+    <div class="fab-container">
+      <button
+        class="fab btn btn-dark"
+        onclick="window.location.href='dashboard1'"
+      >
+        <i class="fas fa-chalkboard-teacher"></i>
+      </button>
+      <button
+        class="fab btn btn-secondary"
+        onclick="window.location.href='qr1'"
+      >
+        <i class="fas fa-qrcode"></i>
+      </button>
+      <button
+        class="fab btn btn-success"
+        onclick="window.location.href='student1'"
+      >
+        <i class="fas fa-upload"></i>
+      </button>
+      <button class="fab btn btn-info" onclick="window.location.href='status1'">
+        <i class="fas fa-check-circle"></i>
+      </button>
+      <button
+        class="fab btn btn-warning"
+        onclick="window.location.href='attendance'"
+      >
+        <i class="fas fa-clipboard-list"></i>
+      </button>
+      <button
+        class="fab btn btn-danger"
+        onclick="window.location.href='{{ url_for('logout') }}'"
+      >
+        <i class="fas fa-sign-out-alt"></i>
+      </button>
+    </div>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        loadAssignments();
+      });
+
+      function loadAssignments() {
+        let assignments = JSON.parse(localStorage.getItem("assignments")) || [];
+        const assignmentList = document.getElementById("assignmentList");
+        assignmentList.innerHTML = "";
+
+        assignments.forEach((assignment) => {
+          let listItem = document.createElement("li");
+          listItem.className =
+            "list-group-item d-flex justify-content-between align-items-center";
+
+          let dueDateClass = "due-date";
+          let uploadStatus = "";
+
+          if (assignment.uploaded) {
+            dueDateClass = "";
+            uploadStatus = '<i class="fas fa-check-circle uploaded"></i>';
+          }
+
+          listItem.innerHTML = `
+            <span onclick="viewAssignment(${assignment.id})" class="text-primary" style="cursor:pointer;">
+              ${assignment.title}
+            </span>
+            <span class="${dueDateClass}">${assignment.dueDate} ${uploadStatus}</span>
+          `;
+          assignmentList.appendChild(listItem);
+        });
+      }
+
+      function viewAssignment(id) {
+        let assignments = JSON.parse(localStorage.getItem("assignments")) || [];
+        let assignment = assignments.find((a) => a.id === id);
+        if (!assignment) return;
+
+        let fileLinkHTML = assignment.file
+          ? `<p><strong>Uploaded File:</strong> <a href="${assignment.file.url}" target="_blank" class="text-primary">${assignment.file.name}</a></p>`
+          : `<p><strong>Uploaded File:</strong> None</p>`;
+
+        let detailsHTML = `
+          <h4>${assignment.title}</h4>
+          <p><strong>Description:</strong> ${assignment.description}</p>
+          <p><strong>Due Date:</strong> ${assignment.dueDate}</p>
+          <p><strong>Created Date:</strong> ${assignment.createdDate}</p>
+          ${fileLinkHTML}
+          <input type="file" id="fileUpload-${assignment.id}" class="d-none"> 
+          <label for="fileUpload-${assignment.id}" class="btn btn-primary upload-btn">Upload Assignment</label>
+        `;
+
+        let detailSection = document.getElementById("assignmentDetails");
+        detailSection.innerHTML = detailsHTML;
+        detailSection.scrollIntoView({ behavior: "smooth" });
+
+        const uploadButton = document.getElementById(
+          `fileUpload-${assignment.id}`
+        );
+        uploadButton.addEventListener("change", function (event) {
+          const file = event.target.files[0];
+          if (file) {
+            const fileURL = URL.createObjectURL(file);
+            assignment.file = { name: file.name, url: fileURL };
+            assignment.uploaded = true;
+            assignment.uploadDate = new Date().toLocaleDateString();
+            assignment.studentName = "{{ student_name }}";
+
+            localStorage.setItem("assignments", JSON.stringify(assignments));
+            let uploadedAssignments =
+              JSON.parse(localStorage.getItem("uploadedAssignments")) || [];
+            uploadedAssignments.push({
+              studentName: "{{ student_name }}",
+              assignmentTitle: assignment.title,
+              uploadDate: assignment.uploadDate,
+              fileName: file.name,
+              fileUrl: fileURL,
+            });
+            localStorage.setItem(
+              "uploadedAssignments",
+              JSON.stringify(uploadedAssignments)
+            );
+
+            uploadButton.disabled = true;
+            detailSection.innerHTML += `<p><strong>Uploaded File:</strong> <a href="${fileURL}" target="_blank" class="text-primary">${file.name}</a></p>`;
+          }
+        });
+      }
+
+      // Function to clear all assignments
+      function clearAssignments() {
+        // Remove all assignments from localStorage
+        localStorage.removeItem("assignments");
+
+        // Clear the assignment list on the page
+        loadAssignments();
+      }
+
+      document.addEventListener("DOMContentLoaded", loadAnnouncements);
+
+      function loadAnnouncements() {
+        let announcements =
+          JSON.parse(localStorage.getItem("announcements")) || [];
+        const announcementList = document.getElementById("announcementList");
+        announcementList.innerHTML = "";
+
+        announcements.forEach((announcement) => {
+          // No filtering for students
+          announcementList.innerHTML += `
+                    <li class="list-group-item">
+                        <span onclick="viewAnnouncement(${
+                          announcement.id
+                        })" class="text-primary" style="cursor: pointer;">
+                            ${
+                              announcement.content.length > 50
+                                ? announcement.content.substring(0, 50) + "..."
+                                : announcement.content
+                            }
+                        </span>
+                    </li>`;
+        });
+      }
+
+      function viewAnnouncement(id) {
+        let announcements =
+          JSON.parse(localStorage.getItem("announcements")) || [];
+        let announcement = announcements.find((a) => a.id === id);
+
+        if (!announcement) return;
+
+        let detailsHTML = `
+                <h4>Announcement</h4>
+                <p>${announcement.content}</p>
+                <p><strong>Created Date:</strong> ${announcement.createdDate}</p>
+            `; // Edit and delete buttons removed
+
+        let detailSection = document.getElementById("announcementDetails");
+        detailSection.innerHTML = detailsHTML;
+        detailSection.scrollIntoView({ behavior: "smooth" });
+      }
+
+      document.addEventListener("DOMContentLoaded", loadEvents);
+
+      function loadEvents() {
+        let events = JSON.parse(localStorage.getItem("events")) || [];
+        const savedEvents = document.getElementById("savedEvents");
+        savedEvents.innerHTML = "";
+
+        events.forEach((event) => {
+          savedEvents.innerHTML += `
+                    <div class="event-card">
+                        <div class="event-header" onclick="toggleEventDetails(${event.id})">
+                            <div class="event-name">${event.name}</div>
+                            <div class="event-date">${event.date}</div>
+                        </div>
+                        <div id="details-${event.id}" class="event-details" style="display: none;">
+                            <p><strong>Description:</strong> ${event.description}</p>
+                            </div>
+                    </div>`; // Edit and delete buttons removed
+        });
+      }
+
+      function toggleEventDetails(id) {
+        const detailsDiv = document.getElementById(`details-${id}`);
+        detailsDiv.style.display =
+          detailsDiv.style.display === "none" ? "block" : "none";
+      }
+
+      let resources = JSON.parse(localStorage.getItem("resources")) || []; // Initialize with an empty array if not available
+
+      // Update resource list function (already existing in your code)
+      function updateResourceList() {
+        const resourceList = document.getElementById("resourceList");
+        resourceList.innerHTML = "";
+
+        let resources = JSON.parse(localStorage.getItem("resources")) || [];
+
+        resources.forEach((resource, index) => {
+          let listItem = document.createElement("li");
+          listItem.classList.add("list-group-item");
+
+          let titleDiv = document.createElement("div");
+          titleDiv.innerHTML = `<strong>${resource.title}</strong>`;
+          titleDiv.style.cursor = "pointer";
+          titleDiv.onclick = () => toggleDetails(index);
+
+          listItem.appendChild(titleDiv);
+
+          let detailsDiv = document.createElement("div");
+          detailsDiv.classList.add("resource-details");
+          detailsDiv.style.display = "none";
+
+          let fileList = document.createElement("ul");
+          fileList.classList.add("mt-2");
+          resource.files.forEach((file) => {
+            let fileItem = document.createElement("li");
+            fileItem.innerHTML = `<a href="${file.url}" target="_blank">${file.name}</a>`;
+            fileList.appendChild(fileItem);
+          });
+          detailsDiv.appendChild(fileList);
+
+          let dateDiv = document.createElement("p");
+          dateDiv.innerHTML = `<small>Created on: ${resource.createdDate}</small>`;
+          detailsDiv.appendChild(dateDiv);
+
+          listItem.appendChild(detailsDiv);
+          resourceList.appendChild(listItem);
+        });
+      }
+
+      function toggleDetails(index) {
+        let resourceList = document.getElementById("resourceList");
+        let items = resourceList.getElementsByClassName("list-group-item");
+        let detailsDiv = items[index].querySelector(".resource-details");
+
+        if (detailsDiv.style.display === "none") {
+          detailsDiv.style.display = "block";
+        } else {
+          detailsDiv.style.display = "none";
+        }
+      }
+
+      window.addEventListener("load", function () {
+        resources = JSON.parse(localStorage.getItem("resources")) || [];
+        console.log("Loaded resources:", resources);
+        updateResourceList();
+      });
+
+      document.addEventListener("DOMContentLoaded", function () {
+        loadAssignments();
+        loadAnnouncements();
+        loadEvents();
+        updateResourceList();
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='styles.css') }}"
+    />
+    <title>Sec B - StudentBase</title>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header" style="margin-bottom: 20px">
+        <h1 class="title" id="StudentBase">StudentBase</h1>
+
+        <div class="section-buttons">
+          <button
+            class="section-button"
+            onclick="window.location.href='section_a'"
+          >
+            Sec A
+          </button>
+          <button
+            class="section-button"
+            onclick="window.location.href='section_b'"
+          >
+            Sec B
+          </button>
+          <button
+            class="section-button"
+            onclick="window.location.href='section_c'"
+          >
+            Sec C
+          </button>
+        </div>
+      </div>
+
+      <h2
+        style="
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-left: 10%;
+          margin-bottom: 20px;
+          font-size: 28px;
+          font-weight: bold;
+          text-transform: uppercase;
+          text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        "
+      >
+        <span>Sec B</span>
+        <form
+          action="{{ url_for('show_add_student_form') }}"
+          method="get"
+          style="margin: 0"
+        >
+          <button type="submit" class="add-student-button">Add Student</button>
+        </form>
+      </h2>
+
+      <table>
+        <thead>
+          <tr style="text-align: center">
+            <th>Student ID</th>
+            <th>Student Name</th>
+            <th>QR Code</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for student in students_data %} {% if student['section_name'] ==
+          'Sec B' %}
+          <tr>
+            <td>{{ student['student_id'] }}</td>
+            <td>{{ student['student_name'] }}</td>
+            <td>
+              <img
+                src="{{ url_for('generate_qr', student_id=student['student_id']) }}"
+                alt="QR Code"
+                width="50"
+                height="50"
+                class="qr-code-icon"
+                data-qr-url="{{ url_for('generate_qr', student_id=student['student_id']) }}"
+                data-student-id="{{ student['student_id'] }}"
+                data-student-name="{{ student['student_name'] }}"
+              />
+            </td>
+
+            <td>
+              <button
+                class="update-button"
+                onclick="window.location.href='{{ url_for('edit_student', student_id=student['student_id']) }}'"
+              >
+                Update
+              </button>
+              <button
+                class="delete-button"
+                onclick="deleteStudent('{{ student['student_id'] }}')"
+              >
+                Delete
+              </button>
+            </td>
+          </tr>
+          {% endif %} {% endfor %}
+        </tbody>
+      </table>
+
+      <a href="{{ url_for('index') }}" id="aa">Back to Timetable</a>
+    </div>
+
+    <!-- Modal for QR Code -->
+    <div id="qrModal" class="modal">
+      <div class="modal-content">
+        <span class="close">&times;</span>
+        <p id="studentName" style="font-size: 20px; font-weight: bold"></p>
+        <p id="studentId"></p>
+        <img id="qrImage" src="" alt="QR Code" style="margin-top: 10px" />
+      </div>
+    </div>
+
+    <script>
+      function deleteStudent(studentId) {
+        if (confirm("Are you sure you want to delete this student?")) {
+          fetch(`/delete_student/${studentId}`, {
+            method: "DELETE",
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.success) {
+                alert("Student deleted successfully!");
+                location.reload();
+              } else {
+                alert("Failed to delete student");
+              }
+            });
+        }
+      }
+
+      var modal = document.getElementById("qrModal");
+      var img = document.querySelectorAll(".qr-code-icon");
+      var modalImg = document.getElementById("qrImage");
+      var studentIdElement = document.getElementById("studentId");
+      var studentNameElement = document.getElementById("studentName");
+      var span = document.getElementsByClassName("close")[0];
+
+      img.forEach(function (image) {
+        image.onclick = function () {
+          modal.style.display = "block";
+          modalImg.src = this.getAttribute("data-qr-url");
+          const studentId = this.getAttribute("data-student-id");
+          const studentName = this.getAttribute("data-student-name");
+          studentIdElement.textContent = "Student ID: " + studentId;
+          studentNameElement.textContent = studentName;
+        };
+      });
+
+      span.onclick = function () {
+        modal.style.display = "none";
+      };
+
+      window.onclick = function (event) {
+        if (event.target == modal) {
+          modal.style.display = "none";
+        }
+      };
+    </script>
+  </body>
+</html>

@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='styles.css') }}"
+    />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+
+
+
+    <title>Timetable</title>
+    <style>
+      .button {
+        display: flex;
+        justify-content: center;
+        width: 10%;
+        text-decoration: none;
+        padding: 12px 15px;
+        border: none;
+        background-color: #55679c;
+        color: white;
+        border-radius: 5px;
+        margin: 5px auto;
+        color: bold;
+        cursor: pointer;
+      }
+
+      .fab-container {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      
+      .fab {
+        position: relative;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        font-size: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        transition: background-color 0.3s ease;
+      }
+      
+      .fab i {
+        color: #fff;
+      }
+      
+      .fab:hover {
+        background-color: #333;
+      }
+      
+      .fab::after {
+        content: '';
+        position: absolute;
+        bottom: 50%;
+        right: 70px;
+        transform: translateY(50%);
+        opacity: 0;
+        visibility: hidden;
+        background-color: #333;
+        color: #fff;
+        padding: 5px 10px;
+        border-radius: 4px;
+        font-size: 12px;
+        white-space: nowrap;
+        transition: opacity 0.3s ease, visibility 0.3s ease;
+      }
+      
+      /* Show the label when hovering */
+      .fab:hover::after {
+        opacity: 1;
+        visibility: visible;
+      }
+      
+      /* Button-specific labels */
+      .fab.btn-primary:hover::after {
+        content: 'View Timetable';
+      }
+      
+      .fab.btn-dark:hover::after {
+        content: 'View Dashboard';
+      }
+
+      .fab.btn-secondary:hover::after {
+        content: 'QR Scan';
+      }
+      
+      .fab.btn-success:hover::after {
+        content: 'QR Upload';
+      }
+      
+      .fab.btn-info:hover::after {
+        content: 'Check Attendance';
+      }
+      
+      .fab.btn-danger:hover::after {
+        content: 'Logout';
+      }
+      
+      .fab.btn-warning:hover::after {
+        content: 'Status';
+      }
+      
+
+      /* Responsive Design */
+      @media (max-width: 768px) {
+        #h1heading {
+          font-size: 2rem; /* Smaller font size for smaller screens */
+        }
+      
+        .contents {
+          padding: 10px;
+        }
+      
+        .dd select {
+          font-size: 1rem; /* Smaller font size */
+          width: 100%;
+          max-width: 200px; /* Adjust the dropdown size */
+        }
+      
+        .edit-button {
+          font-size: 0.9rem; /* Smaller font size for the button */
+        }
+      }
+      
+      @media (max-width: 480px) {
+        #h1heading {
+          font-size: 1.5rem; /* Even smaller font size for very small screens */
+        }
+      
+        .dd select {
+          font-size: 0.9rem; /* Further reduce the font size */
+        }
+      
+        .edit-button {
+          font-size: 0.8rem; /* Further reduce button font size */
+        }
+      }
+
+      @media (max-width: 768px) {
+        .timetable-cell {
+          font-size: 10px;
+          
+        }
+        table{
+          width:50%;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .timetable-cell {
+          font-size: 8px;
+         
+        }
+        table{
+          width:25%;
+        }
+      }
+      
+    </style>
+  </head>
+
+  <body>
+    <div class="container-fluid">
+      <div class="header">
+        <h1 class="title" id="StudentBase">QRSmart</h1>
+      
+      </div>
+    </div>
+    
+    <h1 id="h1heading" class=" text-dark p-3 rounded" style="background-color: #758AC1;">
+      <i class="bi bi-calendar2-check-fill fs-2"></i> Timetable
+    </h1>
+   
+
+<div class="contents">
+  <div class="dd">
+    <select id="sectionDropdown" onchange="showTimetableSection()">
+      <option value="Sec A" selected>Sec A</option>
+      <option value="Sec B">Sec B</option>
+      <option value="Sec C">Sec C</option>
+    </select>
+  </div>
+</div>
+
+
+    {% for section in ['Sec A', 'Sec B', 'Sec C'] %}
+    <div
+      class="timetable-section"
+      id="timetable-{{ section }}"
+      style="{% if section != 'Sec A' %} display: none; {% endif %}"
+    >
+      <h2 id="h2heading">{{ section }}</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>Monday</th>
+            <th>Tuesday</th>
+            <th>Wednesday</th>
+            <th>Thursday</th>
+            <th>Friday</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for time_slot in time_slots %}
+          <tr>
+            <td>{{ time_slot }}</td>
+            {% for day in ['Monday', 'Tuesday', 'Wednesday', 'Thursday',
+            'Friday'] %}
+            <td
+              class="timetable-cell"
+              style="background-color: {{ timetable[section][day].get(time_slot, []) | map(attribute='subject') | first | subject_color }}"
+            >
+              {% for subject in timetable[section][day].get(time_slot, []) %}
+              <span
+                onclick="window.location.href='{{ url_for('subject_details', subject=subject.subject, day=day, section=subject.section) }}'"
+                style="cursor: pointer; color: black; text-decoration: none; font-weight: 500;"
+              >
+                {{ subject.subject }} </span
+              ><br />
+              <span style="font-weight: 500">{{ subject.lecturer }}</span
+              ><br />
+              {% endfor %}
+            </td>
+            {% endfor %}
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <div class="fab-container">
+ 
+        <button class="fab btn btn-dark" onclick="window.location.href='dashboard1'">
+          <i class="fas fa-chalkboard-teacher"></i>
+        </button>
+        <button class="fab btn btn-secondary" onclick="window.location.href='qr1'">
+          <i class="fas fa-qrcode"></i>
+        </button>
+        <button class="fab btn btn-success" onclick="window.location.href='student1'">
+          <i class="fas fa-upload"></i>
+        </button>
+        <button class="fab btn btn-info" onclick="window.location.href='status1'">
+          <i class="fas fa-check-circle"></i>
+        </button>
+        <button class="fab btn btn-warning" onclick="window.location.href='attendance'">
+          <i class="fas fa-clipboard-list"></i>
+        </button>
+        <button class="fab btn btn-danger" onclick="window.location.href='{{ url_for('logout') }}'">
+          <i class="fas fa-sign-out-alt"></i>
+        </button>
+      </div>
+      
+      </div>
+    </div>
+    {% endfor %}
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+      function showTimetableSection() {
+        const selectedSection =
+          document.getElementById("sectionDropdown").value;
+        const timetableSections =
+          document.querySelectorAll(".timetable-section");
+
+        timetableSections.forEach((section) => {
+          section.style.display =
+            section.id === `timetable-${selectedSection}` ? "block" : "none";
+        });
+      }
+    </script>
+  </body>
+</html>

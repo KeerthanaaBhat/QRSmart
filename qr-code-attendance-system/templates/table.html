@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='styles.css') }}"
+    />
+    <title>Timetable</title>
+  </head>
+
+  <body>
+    <h1 id="h1heading">Timetable</h1>
+
+    <div class="contents">
+      <div class="dd">
+        <select id="sectionDropdown" onchange="showTimetableSection()">
+          <option value="Sec A" selected>Sec A</option>
+          <option value="Sec B">Sec B</option>
+          <option value="Sec C">Sec C</option>
+        </select>
+      </div>
+    </div>
+
+    {% for section in ['Sec A', 'Sec B', 'Sec C'] %}
+    <div
+      class="timetable-section"
+      id="timetable-{{ section }}"
+      style="{% if section != 'Sec A' %} display: none; {% endif %}"
+    >
+      <h2 id="h2heading">{{ section }}</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>Monday</th>
+            <th>Tuesday</th>
+            <th>Wednesday</th>
+            <th>Thursday</th>
+            <th>Friday</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for time_slot in time_slots %}
+          <tr>
+            <td>{{ time_slot }}</td>
+            {% for day in ['Monday', 'Tuesday', 'Wednesday', 'Thursday',
+            'Friday'] %}
+            <td
+              class="timetable-cell"
+              style="background-color: {{ timetable[section][day].get(time_slot, []) | map(attribute='subject') | first | subject_color }}"
+            >
+              {% for subject in timetable[section][day].get(time_slot, []) %}
+              <span
+                onclick="window.location.href='{{ url_for('subject_details', subject=subject.subject, day=day, section=subject.section) }}'"
+                style="cursor: pointer; color: black; text-decoration: none"
+              >
+                {{ subject.subject }} </span
+              ><br />
+              <span style="font-weight: normal">{{ subject.lecturer }}</span
+              ><br />
+              {% endfor %}
+            </td>
+            {% endfor %}
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <!-- Attendance Button -->
+      <div class="attendance-button-container">
+        <button class="attendance-button" onclick="window.location.href='qr1'">
+          QR Scan
+        </button>
+        <button
+          class="attendance-button"
+          onclick="window.location.href='dashboard1'"
+        >
+          Dashboard
+        </button>
+
+        <button
+          class="attendance-button"
+          onclick="window.location.href='student1'"
+        >
+          QR Upload
+        </button>
+
+        <button
+          class="attendance-button"
+          onclick="window.location.href='attendance1'"
+        >
+          Status
+        </button>
+
+        <button
+          class="attendance-button"
+          onclick="window.location.href='{{ url_for('logout') }}'"
+        >
+          Logout
+        </button>
+      </div>
+    </div>
+    {% endfor %}
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+    <script>
+      function showTimetableSection() {
+        const selectedSection =
+          document.getElementById("sectionDropdown").value;
+        const timetableSections =
+          document.querySelectorAll(".timetable-section");
+
+        timetableSections.forEach((section) => {
+          section.style.display =
+            section.id === `timetable-${selectedSection}` ? "block" : "none";
+        });
+      }
+    </script>
+  </body>
+</html>
